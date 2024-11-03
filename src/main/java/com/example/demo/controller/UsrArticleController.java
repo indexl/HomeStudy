@@ -73,9 +73,6 @@ public class UsrArticleController {
 
 		Article foundArticle = articleService.getArticleById(id);
 
-		if (foundArticle == null) {
-			return id + "번 게시물은 존재하지 않습니다";
-		}
 
 		articleService.modifyArticle(id, title, body);
 
