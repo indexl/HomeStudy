@@ -3,94 +3,109 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dto.Article;
+import com.example.demo.dto.ResultData;
 import com.example.demo.service.ArticleService;
+import com.example.demo.util.Util;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UsrArticleController {
-
-	private int lastArticleId;
+	
 	private ArticleService articleService;
-
+	
 	public UsrArticleController(ArticleService articleService) {
 		this.articleService = articleService;
-		this.lastArticleId = 3;
 	}
-
+	
 	@GetMapping("/usr/article/doWrite")
 	@ResponseBody
-	public Article doWrite(String title, String body) {
-
-		/*
-		 * lastArticleId++; 
-		 * articleService.writeArticle(lastArticleId, title, body);
-		 * return article;
-		 */
-
-		Article article = new Article();
-
-		// ID 증가
-		lastArticleId++;
-
-		// Article 객체에 값 설정
-		article.setId(lastArticleId);
-		article.setTitle(title);
-		article.setBody(body);
-
-		// 서비스 레이어를 통해 DB에 저장
-		articleService.writeArticle(lastArticleId, title, body);
-
-		// Article 객체 반환
-		return article;
-
-	}
-
-	@GetMapping("/usr/article/showList")
-	@ResponseBody
-	public List<Article> showList() {
-		return articleService.getArticles();
-	}
-
-	@GetMapping("/usr/article/showDetail")
-	@ResponseBody
-	public Object showDetail(int id) {
-
-		Article foundArticle = articleService.getArticleById(id);
-
-		if (foundArticle == null) {
-			return id + "번 게시물은 존재하지 않습니다";
+	public ResultData<Article> doWrite(HttpSession session, String title, String body) {
+		
+		int loginedMemberId = -1;
+		
+		if (session.getAttribute("loginedMemberId") != null) {
+			loginedMemberId = (int) session.getAttribute("loginedMemberId");
 		}
-
-		return foundArticle;
+		
+		if (loginedMemberId == -1) {
+			return ResultData.from("F-1", "로그인 후 이용할 수 있는 기능입니다");
+		}
+		
+		if (Util.isEmpty(title)) {
+			return ResultData.from("F-2", "제목을 입력해주세요");
+		}
+		
+		if (Util.isEmpty(body)) {
+			return ResultData.from("F-3", "내용을 입력해주세요");
+		}
+		
+		articleService.writeArticle(loginedMemberId, title, body);
+		
+		int id = articleService.getLastInsertId();
+		
+		return ResultData.from("S-1", String.format("%d번 게시물을 작성했습니다", id), articleService.getArticleById(id));
 	}
 
+	@GetMapping("/usr/article/list")
+	public String showList(Model model) {
+		List<Article> articles = articleService.getArticles();
+		
+		model.addAttribute("articles", articles);
+		
+		return "usr/article/list";
+	}
+	
+	@GetMapping("/usr/article/detail")
+	public String showDetail(Model model, int id) {
+		
+		Article article = articleService.getArticleById(id);
+		
+		model.addAttribute("article", article);
+		
+		return "usr/article/detail";
+	}
+	
 	@GetMapping("/usr/article/doModify")
 	@ResponseBody
-	public String doModify(int id, String title, String body) {
-
+	public ResultData<Article> doModify(HttpSession session, int id, String title, String body) {
+		
+		int loginedMemberId = -1;
+		
+		if (session.getAttribute("loginedMemberId") != null) {
+			loginedMemberId = (int) session.getAttribute("loginedMemberId");
+		}
+		
+		if (loginedMemberId == -1) {
+			return ResultData.from("F-1", "로그인 후 이용할 수 있는 기능입니다");
+		}
+		
 		Article foundArticle = articleService.getArticleById(id);
-
-
+		
+		if (foundArticle == null) {
+			return ResultData.from("F-2", String.format("%d번 게시물은 존재하지 않습니다", id));
+		}
+		
+		if (loginedMemberId != foundArticle.getMemberId()) {
+			return ResultData.from("F-3", "해당 게시물에 대한 권한이 없습니다");
+		}
+		
 		articleService.modifyArticle(id, title, body);
-
-		return id + "번 게시물을 정상적으로 수정했습니다";
+		
+		return ResultData.from("S-1", String.format("%d번 게시물을 수정했습니다", id), articleService.getArticleById(id));
 	}
 
 	@GetMapping("/usr/article/doDelete")
 	@ResponseBody
-	public String doDelete(int id) {
-
-		Article foundArticle = articleService.getArticleById(id);
-
-		if (foundArticle == null) {
-			return id + "번 게시물은 존재하지 않습니다";
-		}
-
+	public String doDelete(HttpSession session, int id) {
+		
 		articleService.deleteArticle(id);
-
-		return id + "번 게시물을 정상적으로 삭제했습니다";
+		
+		return Util.jsReturn(String.format("%d번 게시물을 삭제했습니다", id), "list");
 	}
 }

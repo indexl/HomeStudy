@@ -4,33 +4,42 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import com.example.demo.dto.Article;
 
+@Mapper
 public interface ArticleDao {
 	
 	@Insert("""
-			INSERT
-				INTO article(
-					id, title, body)
-				VALUES (
-				#{id}, #{title}, #{body})
+			INSERT INTO article
+				SET regDate = NOW()
+					, updateDate = NOW()
+					, memberId = #{loginedMemberId}
+					, title = #{title}
+					, `body` = #{body}
 			""")
-	public void writeArticle(int id, String title, String body);
+	public void writeArticle(int loginedMemberId, String title, String body);
 
 	@Select("""
-			SELECT *
-				FROM article
-				ORDER BY id DESC
+			SELECT a.*
+					, m.loginId
+				FROM article AS a
+				INNER JOIN `member` AS m
+				ON a.memberId = m.id
+				ORDER BY a.id DESC
 			""")
 	public List<Article> getArticles();
 
 	@Select("""
-			SELECT *
-				FROM article
-				WHERE id = #{id}
+			SELECT a.*
+					, m.loginId
+				FROM article AS a
+				INNER JOIN `member` AS m
+				ON a.memberId = m.id
+				WHERE a.id = #{id}
 			""")
 	public Article getArticleById(int id);
 
@@ -41,7 +50,6 @@ public interface ArticleDao {
 					<if test="title != null and title != ''">
 						, title = #{title}
 					</if>
-					
 					<if test="body != null and body != ''">
 						, `body` = #{body}
 					</if>
@@ -55,4 +63,9 @@ public interface ArticleDao {
 				WHERE id = #{id}
 			""")
 	public void deleteArticle(int id);
+
+	@Select("""
+			SELECT LAST_INSERT_ID();
+			""")
+	public int getLastInsertId();
 }
