@@ -32,10 +32,7 @@ public class UsrMemberController {
 		
 		Member member = memberService.getMemberByLoginId(loginId);
 		
-		if (member != null) {
-			return ResultData.from("F-2", String.format("[ %s ] 은(는) 이미 사용중인 아이디입니다", loginId));
-		}
-		
+	
 		if (Util.isEmpty(loginPw)) {
 			return ResultData.from("F-3", "비밀번호를 입력해주세요");
 		}
