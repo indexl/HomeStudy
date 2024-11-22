@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import com.example.demo.dto.Article;
+import com.example.demo.dto.Board;
 
 @Mapper
 public interface ArticleDao {
@@ -17,11 +18,12 @@ public interface ArticleDao {
 			INSERT INTO article
 				SET regDate = NOW()
 					, updateDate = NOW()
+					, boardId = #{boardId}
 					, memberId = #{loginedMemberId}
 					, title = #{title}
 					, `body` = #{body}
 			""")
-	public void writeArticle(int loginedMemberId, String title, String body);
+	public void writeArticle(int loginedMemberId, int boardId, String title, String body);
 
 	@Select("""
 			SELECT a.*
@@ -29,9 +31,11 @@ public interface ArticleDao {
 				FROM article AS a
 				INNER JOIN `member` AS m
 				ON a.memberId = m.id
+				WHERE a.boardId = #{boardId}
 				ORDER BY a.id DESC
+				LIMIT #{limitFrom}, 10
 			""")
-	public List<Article> getArticles();
+	public List<Article> getArticles(int boardId, int limitFrom);
 
 	@Select("""
 			SELECT a.*
@@ -44,17 +48,11 @@ public interface ArticleDao {
 	public Article getArticleById(int id);
 
 	@Update("""
-			<script>
 			UPDATE article
 				SET updateDate = NOW()
-					<if test="title != null and title != ''">
-						, title = #{title}
-					</if>
-					<if test="body != null and body != ''">
-						, `body` = #{body}
-					</if>
+					, title = #{title}
+					, `body` = #{body}
 				WHERE id = #{id}
-			</script>
 			""")
 	public void modifyArticle(int id, String title, String body);
 
@@ -68,4 +66,18 @@ public interface ArticleDao {
 			SELECT LAST_INSERT_ID();
 			""")
 	public int getLastInsertId();
+
+	@Select("""
+			SELECT *
+				FROM board
+				WHERE id = #{boardId};
+			""")
+	public Board getBoardById(int boardId);
+
+	@Select("""
+			SELECT COUNT(id)
+				FROM article
+				WHERE boardId = #{boardId}
+			""")
+	public int getArticlesCnt(int boardId);
 }

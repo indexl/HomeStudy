@@ -37,9 +37,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -53,8 +52,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -73,38 +73,27 @@
 			<version>3.0.3</version>
 			<scope>test</scope>
 		</dependency>
-		
-		
+
 		<dependency>
 		    <groupId>org.apache.tomcat.embed</groupId>
 		    <artifactId>tomcat-embed-jasper</artifactId>
-		    <version>11.0.0</version>
 		</dependency>
-		
 		
 		<dependency>
 		    <groupId>jakarta.servlet</groupId>
 		    <artifactId>jakarta.servlet-api</artifactId>
-		    <version>6.1.0</version>
 		    <scope>provided</scope>
 		</dependency>
-		
-		
+
 		<dependency>
 		    <groupId>jakarta.servlet.jsp.jstl</groupId>
 		    <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-		    <version>3.0.2</version>
 		</dependency>
 		
-		<!-- https://mvnrepository.com/artifact/org.glassfish.web/jstl-impl -->
 		<dependency>
-		    <groupId>org.glassfish.web</groupId>
-		    <artifactId>jstl-impl</artifactId>
-		    <version>1.2</version>
-		    <scope>runtime</scope>
-		</dependency>
- 
-		
+	        <groupId>org.glassfish.web</groupId>
+	        <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+	    </dependency>
 	</dependencies>
 
 	<build>

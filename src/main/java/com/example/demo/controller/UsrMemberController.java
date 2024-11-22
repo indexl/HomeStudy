@@ -1,15 +1,18 @@
 package com.example.demo.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dto.Member;
 import com.example.demo.dto.ResultData;
+import com.example.demo.dto.Rq;
 import com.example.demo.service.MemberService;
+import com.example.demo.util.Util;
 
-import ch.qos.logback.classic.pattern.Util;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class UsrMemberController {
@@ -20,77 +23,108 @@ public class UsrMemberController {
 		this.memberService = memberService;
 	}
 	
-	@GetMapping("/usr/member/doJoin")
+	@GetMapping("/usr/member/join")
+	public String join() {
+		return "usr/member/join";
+	}
+	
+	@PostMapping("/usr/member/doJoin")
 	@ResponseBody
-	public ResultData<Member> doJoin(String loginId, String loginPw, String loginPwChk, String name) {
+	public String doJoin(String loginId, String loginPw, String name) {
+		memberService.joinMember(loginId, loginPw, name);
 		
-		if (Util.isEmpty(loginId)) {
-			return ResultData.from("F-1", "아이디를 입력해주세요");
-		}
+		return Util.jsReturn(String.format("[ %s ] 님이 가입되었습니다", loginId), "login");
+	}
+	
+	@GetMapping("/usr/member/loginIdDupChk")
+	@ResponseBody
+	public ResultData loginIdDupChk(String loginId) {
 		
 		Member member = memberService.getMemberByLoginId(loginId);
 		
 		if (member != null) {
-			return ResultData.from("F-2", String.format("[ %s ] 은(는) 이미 사용중인 아이디입니다", loginId));
+			return ResultData.from("F-1", String.format("[ %s ]은(는) 이미 사용중인 아이디입니다", loginId));
 		}
 		
-		if (Util.isEmpty(loginPw)) {
-			return ResultData.from("F-3", "비밀번호를 입력해주세요");
-		}
-		if (Util.isEmpty(name)) {
-			return ResultData.from("F-4", "이름을 입력해주세요");
-		}
-		
-		if (loginPw.equals(loginPwChk) == false) {
-			return ResultData.from("F-5", "비밀번호가 일치하지 않습니다");
-		}
-		
-		memberService.joinMember(loginId, loginPw, name);
-		
-		int id = memberService.getLastInsertId();
-		
-		return ResultData.from("S-1", String.format("[ %s ] 님이 가입되었습니다", loginId), memberService.getMemberById(id));
+		return ResultData.from("S-1", String.format("[ %s ]은(는) 사용가능한 아이디입니다", loginId));
 	}
 	
-	@GetMapping("/usr/member/doLogin")
+	@GetMapping("/usr/member/login")
+	public String login() {
+		return "usr/member/login";
+	}
+	
+	@PostMapping("/usr/member/doLogin")
 	@ResponseBody
-	public ResultData doLogin(HttpSession session, String loginId, String loginPw) {
-		if (session.getAttribute("loginedMemberId") != null) {
-			return ResultData.from("F-1", "로그아웃 후 이용할 수 있는 기능입니다");
-		}
+	public String doLogin(HttpServletRequest req, String loginId, String loginPw) {
 		
-		if (Util.isEmpty(loginId)) {
-			return ResultData.from("F-2", "아이디를 입력해주세요");
-		}
-		
-		if (Util.isEmpty(loginPw)) {
-			return ResultData.from("F-3", "비밀번호를 입력해주세요");
-		}
-		
+		Rq rq = (Rq) req.getAttribute("rq");
+
 		Member member = memberService.getMemberByLoginId(loginId);
 		
 		if (member == null) {
-			return ResultData.from("F-4", String.format("[ %s ] 은(는) 존재하지 않는 아이디입니다", loginId));
+			return Util.jsReturn(String.format("[ %s ] 은(는) 존재하지 않는 아이디입니다", loginId), null);
 		}
 		
 		if (member.getLoginPw().equals(loginPw) == false) {
-			return ResultData.from("F-5", "비밀번호를 확인해주세요");
+			return Util.jsReturn("비밀번호를 확인해주세요", null);
 		}
 		
-		session.setAttribute("loginedMemberId", member.getId());
+		rq.login(member.getId());
 		
-		return ResultData.from("S-1", String.format("%s님 환영합니다~", member.getName()));
+		return Util.jsReturn(String.format("%s님 환영합니다~", member.getName()), "/");
+	}
+	
+	@GetMapping("/usr/member/myPage")
+	public String myPage(HttpServletRequest req, Model model) {
+		Rq rq = (Rq) req.getAttribute("rq");
+
+		Member member = memberService.getMemberById(rq.getLoginedMemberId());
+		
+		model.addAttribute("member", member);
+		
+		return "usr/member/myPage";
+	}
+	
+	@GetMapping("/usr/member/checkPw")
+	public String checkPw() {
+		return "usr/member/checkPw";
+	}
+	
+	@GetMapping("/usr/member/getMemberById")
+	@ResponseBody
+	public ResultData<Member> getMemberById(HttpServletRequest req) {
+		
+		Rq rq = (Rq) req.getAttribute("rq");
+		
+		Member member = memberService.getMemberById(rq.getLoginedMemberId());
+		
+		return ResultData.from("S-1", "회원정보 조회", member);
+	}
+	
+	@PostMapping("/usr/member/doCheckPw")
+	public String doCheckPw() {
+		return "usr/member/modifyPw";
+	}
+	
+	@PostMapping("/usr/member/doModifyPw")
+	@ResponseBody
+	public String doModifyPw(HttpServletRequest req, String loginPw) {
+		Rq rq = (Rq) req.getAttribute("rq");
+		
+		memberService.modifyPassword(rq.getLoginedMemberId(), loginPw);
+		
+		rq.logout();
+		return Util.jsReturn("비밀번호 수정이 완료되었습니다. 다시 로그인 해주세요", "login");
 	}
 	
 	@GetMapping("/usr/member/doLogout")
 	@ResponseBody
-	public ResultData doLogout(HttpSession session) {
-		if (session.getAttribute("loginedMemberId") == null) {
-			return ResultData.from("F-1", "로그인 후 이용할 수 있는 기능입니다");
-		}
+	public String doLogout(HttpServletRequest req) {
+		Rq rq = (Rq) req.getAttribute("rq");
 		
-		session.removeAttribute("loginedMemberId");
+		rq.logout();
 		
-		return ResultData.from("S-1", "정상적으로 로그아웃 되었습니다");
+		return Util.jsReturn("정상적으로 로그아웃 되었습니다", "/");
 	}
 }

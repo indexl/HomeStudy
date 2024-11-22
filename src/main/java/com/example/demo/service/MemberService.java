@@ -29,4 +29,8 @@ public class MemberService {
 	public int getLastInsertId() {
 		return memberDao.getLastInsertId();
 	}
+
+	public void modifyPassword(int loginedMemberId, String loginPw) {
+		memberDao.modifyPassword(loginedMemberId, loginPw);
+	}
 }
