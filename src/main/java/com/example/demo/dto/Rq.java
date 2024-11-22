@@ -2,6 +2,9 @@ package com.example.demo.dto;
 
 import java.io.IOException;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
+
 import com.example.demo.util.Util;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 
+
+@Component
+@RequestScope
 public class Rq {
 	
 	@Getter

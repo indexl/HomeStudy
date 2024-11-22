@@ -51,8 +51,8 @@
 				</div>
 			</c:if>
 		</div>
-
-		<!-- 댓글 작성 섹션 -->
+			
+			<!-- 댓글 작성 섹션 -->
 		<div class="w-9/12 mx-auto mt-8">
 			<h3 class="text-lg font-bold">댓글 작성</h3>
 			<form action="../reply/doWrite" method="post" class="mt-4">
@@ -70,6 +70,7 @@
 				</div>
 			</form>
 		</div>
+		
 	</div>
 </section>
 
