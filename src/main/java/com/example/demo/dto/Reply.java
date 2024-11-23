@@ -13,6 +13,12 @@ public class Reply {
 	private String updateDate;
 	private int memberId;
 	private String relTypeCode;
-	private int relId;
-	private String body;	
+	private String relId;
+	private String body;
+	
+	private String loginId;
+	
+	public String getForPrintBody( ) {
+		return this.body.replaceAll("\n", "<br />");
+	}
 }

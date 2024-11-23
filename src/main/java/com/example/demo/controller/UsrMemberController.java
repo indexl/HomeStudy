@@ -127,4 +127,14 @@ public class UsrMemberController {
 		
 		return Util.jsReturn("정상적으로 로그아웃 되었습니다", "/");
 	}
+	
+	@GetMapping("/usr/member/getLoginId")
+	@ResponseBody
+	public String getLoginId(HttpServletRequest req) {
+		Rq rq = (Rq) req.getAttribute("rq");
+
+		Member member = memberService.getMemberById(rq.getLoginedMemberId());
+		
+		return member.getLoginId();
+	}
 }
