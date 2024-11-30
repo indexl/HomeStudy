@@ -42,6 +42,7 @@ CREATE TABLE reply(
 
 
 
+
 CREATE TABLE likes (
     id INT AUTO_INCREMENT PRIMARY KEY
     ,article_id INT NOT NULL

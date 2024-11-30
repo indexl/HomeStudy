@@ -52,9 +52,4 @@ public class ArticleService {
 	public void increaseViews(int id) {
 		articleDao.increaseViews(id);
 	}
-
-	public int getLikeCount(int id) {
-	
-		return articleDao.getLikeCount(articleId);
-	}
 }
