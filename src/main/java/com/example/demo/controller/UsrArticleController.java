@@ -74,11 +74,6 @@ public class UsrArticleController {
 
 		model.addAttribute("board", board);
 		model.addAttribute("articles", articles);
-		model.addAttribute("articlesCnt", articlesCnt);
-		model.addAttribute("totalPagesCnt", totalPagesCnt);
-		model.addAttribute("from", from);
-		model.addAttribute("end", end);
-		model.addAttribute("cPage", cPage);
 		model.addAttribute("searchType", searchType);
 		model.addAttribute("searchKeyword", searchKeyword);
 
