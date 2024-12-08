@@ -15,8 +15,7 @@
 				<div class="flex">
 					<select class="select select-bordered select-sm mr-2" name="searchType">
 						<option value="title" <c:if test="${searchType == 'title' }">selected="selected"</c:if>>제목</option>
-						<option value="body" <c:if test="${searchType == 'body' }">selected="selected"</c:if>>내용</option>
-						<option value="title,body" <c:if test="${searchType == 'title,body' }">selected="selected"</c:if>>제목 + 내용</option>
+				
 					</select>
 					
 					<label class="input input-bordered input-sm flex items-center gap-2 w-60">
